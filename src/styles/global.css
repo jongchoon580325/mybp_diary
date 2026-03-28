@@ -1,0 +1,101 @@
+/* ================================================================
+   BloodPressure Manager — Global Styles
+   ================================================================ */
+
+@import './tokens.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── 기본 리셋 & 베이스 ─────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', 'DM Mono', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ── 앱 루트 레이아웃 ───────────────────────────────────────────── */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 480px;   /* 모바일 최적화: 최대 너비 제한 */
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ── 메인 콘텐츠 영역 (Header + Footer + BottomNav 여백 확보) ────── */
+.main-content {
+  flex: 1;
+  padding-top: var(--header-h);
+  padding-bottom: calc(var(--bottom-nav-h) + var(--footer-h) + 8px);
+  overflow-y: auto;
+}
+
+/* ── 카드 공통 스타일 ───────────────────────────────────────────── */
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+/* ── 상태 배지 ──────────────────────────────────────────────────── */
+.badge-normal  { background: var(--color-status-normal-bg);  color: var(--color-status-normal);  border: 1px solid var(--color-status-normal-border); }
+.badge-caution { background: var(--color-status-caution-bg); color: var(--color-status-caution); border: 1px solid var(--color-status-caution-border); }
+.badge-danger  { background: var(--color-status-danger-bg);  color: var(--color-status-danger);  border: 1px solid var(--color-status-danger-border); }
+
+/* ── 공통 버튼 ──────────────────────────────────────────────────── */
+.btn-primary {
+  background-color: var(--color-primary-700);
+  color: var(--color-text-on-dark);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  width: 100%;
+}
+
+.btn-primary:hover  { background-color: var(--color-primary-600); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled {
+  background-color: var(--color-neutral-300);
+  color: var(--color-neutral-500);
+  cursor: not-allowed;
+  /* 해칭 패턴 */
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    rgba(0,0,0,0.06) 4px,
+    rgba(0,0,0,0.06) 8px
+  );
+}
+
+/* ── 스크롤바 (WebKit) ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-neutral-300); border-radius: 2px; }
+
+/* ── 숫자 입력 스피너 제거 ──────────────────────────────────────── */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type='number'] { -moz-appearance: textfield; }
