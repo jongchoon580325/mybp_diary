@@ -1,34 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a4a2e"/>
+      <stop offset="100%" stop-color="#0c2016"/>
+    </linearGradient>
     <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e5530"/>
-      <stop offset="100%" stop-color="#0f2d1a"/>
+      <stop offset="0%" stop-color="#266b3a"/>
+      <stop offset="100%" stop-color="#143d22"/>
     </linearGradient>
     <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#6ec07f"/>
-      <stop offset="100%" stop-color="#9dd9ab"/>
+      <stop offset="0%" stop-color="#5dba72"/>
+      <stop offset="100%" stop-color="#a0e8b0"/>
     </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
   </defs>
 
-  <!-- 방패형 배경 -->
-  <path d="M96 12 L168 40 L168 100 Q168 148 96 178 Q24 148 24 100 L24 40 Z"
-        fill="url(#shieldGrad)" />
+  <!-- 배경 -->
+  <rect width="512" height="512" fill="url(#bgGrad)"/>
 
-  <!-- 방패 테두리 -->
-  <path d="M96 20 L160 46 L160 100 Q160 143 96 170 Q32 143 32 100 L32 46 Z"
-        fill="none" stroke="#4aa362" stroke-width="2" opacity="0.5"/>
+  <!-- 방패 (2배 확대, 중앙 정렬) -->
+  <path d="M256 28 L468 108 L468 268 Q468 400 256 488 Q44 400 44 268 L44 108 Z"
+        fill="url(#shieldGrad)"
+        filter="url(#shadow)"/>
 
-  <!-- 심박 파형 (EKG) -->
+  <!-- 방패 테두리 하이라이트 -->
+  <path d="M256 52 L444 126 L444 268 Q444 382 256 462 Q68 382 68 268 L68 126 Z"
+        fill="none"
+        stroke="#5dba72"
+        stroke-width="3"
+        opacity="0.45"/>
+
+  <!-- 심박 EKG 파형 (중앙, 크게) -->
   <polyline
-    points="36,100 60,100 70,72 80,128 90,88 100,112 110,100 156,100"
+    points="72,268 156,268 192,172 228,364 260,208 292,304 328,268 440,268"
     fill="none"
     stroke="url(#waveGrad)"
-    stroke-width="6"
+    stroke-width="22"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
 
-  <!-- 소형 하트 장식 (우상단) -->
-  <path d="M140 52 C140 49 142 47 145 47 C148 47 150 49 150 52 C150 55 145 59 145 59 C145 59 140 55 140 52 Z"
-        fill="#6ec07f" opacity="0.8"/>
+  <!-- 우상단 하트 장식 -->
+  <path d="M376 130 C376 120 382 114 390 114 C398 114 404 120 404 130 C404 140 390 152 390 152 C390 152 376 140 376 130 Z"
+        fill="#6ec07f"
+        opacity="0.85"/>
 </svg>
