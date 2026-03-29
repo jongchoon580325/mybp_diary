@@ -8,7 +8,7 @@ const SAMPLE_SESSION: MeasurementSession = {
   age_group:   '50대',
   measured_at: '2026-03-28T07:30:00.000Z',
   time_slot:   '아침',
-  arm:         '좌팔',
+  arm:         '왼쪽 팔',
   posture:     '앉은 자세',
   readings: [
     { sys: 120, dia: 80, pul: 72 },

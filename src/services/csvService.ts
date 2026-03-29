@@ -89,7 +89,7 @@ export function csvToSessions(csvText: string): MeasurementSession[] {
       age_group:  (get('age_group') || '50대') as AgeGroup,
       measured_at: get('measured_at') || new Date().toISOString(),
       time_slot:  (get('time_slot') || '아침') as TimeSlot,
-      arm:        (get('arm') || '좌팔') as Arm,
+      arm:        (get('arm') || '왼쪽 팔') as Arm,
       posture:    (get('posture') || '앉은 자세') as Posture,
       readings: [
         { sys: getN('sys1') || getN('avg_sys'), dia: getN('dia1') || getN('avg_dia'), pul: getN('pul1') || getN('avg_pul') },

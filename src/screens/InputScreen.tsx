@@ -17,7 +17,7 @@ import AiResultModal from '../components/AiResultModal';
 import type { AiJudgeResult, MeasurementSession, Reading } from '../types';
 
 const TIME_OPTIONS  = ['아침', '저녁']    as const;
-const ARM_OPTIONS   = ['좌팔', '우팔']   as const;
+const ARM_OPTIONS   = ['왼쪽 팔', '오른쪽 팔']   as const;
 const POSE_OPTIONS  = ['앉은 자세', '누운 자세'] as const;
 
 function generateUUID(): string {

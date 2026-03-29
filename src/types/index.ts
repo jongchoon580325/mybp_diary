@@ -15,7 +15,7 @@ export interface Reading {
 
 // ─── 시간대 / 팔 / 자세 ──────────────────────────────────────────────────────
 export type TimeSlot = '아침' | '저녁';
-export type Arm = '좌팔' | '우팔';
+export type Arm = '왼쪽 팔' | '오른쪽 팔';
 export type Posture = '앉은 자세' | '누운 자세';
 
 // ─── 측정 세션 (IndexedDB 저장 단위) ─────────────────────────────────────────

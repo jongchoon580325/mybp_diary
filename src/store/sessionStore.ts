@@ -22,7 +22,7 @@ interface SessionActions {
 const defaultDraft: SessionDraft = {
   readings: [],
   timeSlot: '아침',
-  arm: '좌팔',
+  arm: '왼쪽 팔',
   posture: '앉은 자세',
   memo: '',
 };

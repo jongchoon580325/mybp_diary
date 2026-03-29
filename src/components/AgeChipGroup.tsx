@@ -79,7 +79,7 @@ export default function AgeChipGroup({ value, onChange, label = '연령대 선�
             color: 'var(--color-status-caution)',
           }}
         >
-          연령대를 선택해야 저장할 수 있습니다.
+          상단 설정(⚙️) 클릭 후 '이름과 연령대'를 등록해야 저장할 수 있습니다.
         </p>
       )}
     </div>
