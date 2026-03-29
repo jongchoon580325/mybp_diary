@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Settings } from 'lucide-react';
 import { AGE_GROUPS, type AgeGroup } from '../types';
 import { useSettingsStore } from '../store/settingsStore';
 
@@ -77,9 +78,15 @@ export default function AgeChipGroup({ value, onChange, label = '연령대 선�
             margin: '6px 0 0 0',
             fontSize: '12px',
             color: 'var(--color-status-caution)',
+            display: 'flex',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '2px',
           }}
         >
-          상단 설정(⚙️) 클릭 후 '이름과 연령대'를 등록해야 저장할 수 있습니다.
+          <span>설정(</span>
+          <Settings size={12} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} />
+          <span>) 클릭 후 '이름과 연령대'를 등록해야 저장할 수 있습니다.</span>
         </p>
       )}
     </div>
