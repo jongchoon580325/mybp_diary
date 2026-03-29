@@ -54,6 +54,25 @@ export default function Header({ onSettingsClick, onNotificationClick, notificat
         </div>
       </div>
 
+      {/* 중앙 타이틀 */}
+      <div style={{
+        position: 'absolute',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        textAlign: 'center',
+        pointerEvents: 'none',
+      }}>
+        <span style={{
+          color: '#ffffff',
+          fontWeight: 800,
+          fontSize: '17px',
+          letterSpacing: '-0.4px',
+          whiteSpace: 'nowrap',
+        }}>
+          혈압 / 혈당 관리
+        </span>
+      </div>
+
       {/* 우측 액션 버튼 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
         {/* 알림 버튼 */}
