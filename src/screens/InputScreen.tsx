@@ -25,7 +25,7 @@ function generateUUID(): string {
 }
 
 function formatDate(d: Date): string {
-  return d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+  return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
 }
 
 function formatTime(d: Date): string {
@@ -277,40 +277,42 @@ export default function InputScreen() {
         </p>
       </div>
 
-      {/* 저장 버튼 */}
-      <motion.button
-        whileTap={canSave ? { scale: 0.97 } : {}}
-        onClick={handleSave}
-        disabled={!canSave || isSaving}
-        style={{
-          width: '100%', padding: '15px',
-          borderRadius: 'var(--radius-lg)', border: 'none',
-          background: canSave
-            ? 'var(--color-primary-700)'
-            : 'var(--color-neutral-200)',
-          color: canSave ? '#fff' : 'var(--color-neutral-400)',
-          fontSize: '16px', fontWeight: 700,
-          cursor: canSave ? 'pointer' : 'not-allowed',
-          backgroundImage: canSave ? 'none' : `repeating-linear-gradient(
-            -45deg, transparent, transparent 4px,
-            rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 8px
-          )`,
-          transition: 'all 0.15s',
-        }}
-      >
-        {isSaving ? (
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            <span style={{
-              width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.4)',
-              borderTop: '2px solid #fff', borderRadius: '50%',
-              display: 'inline-block',
-              animation: 'spin 0.8s linear infinite',
-            }} />
-            AI 판정 중...
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          </span>
-        ) : !ageGroup ? '연령대를 먼저 선택하세요' : !isComplete ? `${3 - step}회 더 측정 필요` : '측정값 저장'}
-      </motion.button>
+      {/* 저장 버튼 — 연령대 선택 후에만 표시 */}
+      {ageGroup && (
+        <motion.button
+          whileTap={canSave ? { scale: 0.97 } : {}}
+          onClick={handleSave}
+          disabled={!canSave || isSaving}
+          style={{
+            width: '100%', padding: '15px',
+            borderRadius: 'var(--radius-lg)', border: 'none',
+            background: canSave
+              ? 'var(--color-primary-700)'
+              : 'var(--color-neutral-200)',
+            color: canSave ? '#fff' : 'var(--color-neutral-400)',
+            fontSize: '16px', fontWeight: 700,
+            cursor: canSave ? 'pointer' : 'not-allowed',
+            backgroundImage: canSave ? 'none' : `repeating-linear-gradient(
+              -45deg, transparent, transparent 4px,
+              rgba(0,0,0,0.05) 4px, rgba(0,0,0,0.05) 8px
+            )`,
+            transition: 'all 0.15s',
+          }}
+        >
+          {isSaving ? (
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <span style={{
+                width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.4)',
+                borderTop: '2px solid #fff', borderRadius: '50%',
+                display: 'inline-block',
+                animation: 'spin 0.8s linear infinite',
+              }} />
+              AI 판정 중...
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </span>
+          ) : !isComplete ? `${3 - step}회 더 측정 필요` : '측정값 저장'}
+        </motion.button>
+      )}
 
       {/* 최근 측정 미니 리스트 */}
       {recentSessions.length > 0 && (
