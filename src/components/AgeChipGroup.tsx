@@ -75,17 +75,22 @@ export default function AgeChipGroup({ value, onChange, label = '연령대 선�
       {!selected && (
         <p
           style={{
-            margin: '6px 0 0 0',
+            margin: '8px 0 0 0',
             fontSize: '12px',
             color: 'var(--color-status-caution)',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             flexWrap: 'wrap',
-            gap: '2px',
+            gap: '3px',
+            textAlign: 'center',
           }}
         >
           <span>설정(</span>
-          <Settings size={12} style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }} />
+          <Settings
+            size={12}
+            style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
+          />
           <span>) 클릭 후 '이름과 연령대'를 등록해야 저장할 수 있습니다.</span>
         </p>
       )}

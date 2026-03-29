@@ -7,6 +7,7 @@ import Modal from './components/Modal';
 import ToastNotification from './components/ToastNotification';
 import SettingsDrawer from './components/SettingsDrawer';
 import NotificationDrawer from './components/NotificationDrawer';
+import PwaUpdateBanner from './components/PwaUpdateBanner';
 
 const InputScreen  = lazy(() => import('./screens/InputScreen'));
 const ChartScreen  = lazy(() => import('./screens/ChartScreen'));
@@ -59,6 +60,9 @@ export default function App() {
       {/* 전역 모달 & 토스트 */}
       <Modal />
       <ToastNotification />
+
+      {/* PWA 업데이트 배너 */}
+      <PwaUpdateBanner />
 
       {/* 드로어 */}
       <SettingsDrawer
