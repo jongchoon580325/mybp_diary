@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGlucoseDB } from '../hooks/useGlucoseDB';
@@ -48,12 +48,13 @@ export default function GlucoseRecordScreen() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [tagFilter,    setTagFilter]    = useState<TagFilter>('ALL');
 
-  const loadRecords = useCallback(async () => {
-    const data = await db.getAllRecords();
-    setRecords(data);
+  useEffect(() => {
+    const load = async () => {
+      const data = await db.getAllRecords();
+      setRecords(data);
+    };
+    load();
   }, [db]);
-
-  useEffect(() => { loadRecords(); }, [loadRecords]);
 
   const filtered = records.filter((r) => {
     if (statusFilter !== 'ALL' && r.status   !== statusFilter) return false;

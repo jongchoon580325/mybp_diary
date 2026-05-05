@@ -59,7 +59,7 @@ export default function GlucoseInputScreen() {
 
   useEffect(() => {
     db.getRecentRecords(3).then(setRecentRecords);
-  }, []);
+  }, [db]);
 
   const level   = Number(glucoseLevel);
   const canSave = glucoseLevel !== '' && !isNaN(level) && level > 0;

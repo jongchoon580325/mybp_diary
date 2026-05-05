@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ResponsiveContainer, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
@@ -48,9 +48,15 @@ function getPeriodStart(key: PeriodKey): Date | null {
 
 // ── 커스텀 툴팁 ───────────────────────────────────────────────────────────────
 
-function GlucoseTooltip({ active, payload, label }: any) {
+interface GlucoseTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload?: { record?: GlucoseRecord }; value?: number }>;
+  label?: string;
+}
+
+function GlucoseTooltip({ active, payload, label }: GlucoseTooltipProps) {
   if (!active || !payload?.length) return null;
-  const record: GlucoseRecord = payload[0]?.payload?.record;
+  const record: GlucoseRecord | undefined = payload[0]?.payload?.record;
   return (
     <div style={{
       background: 'var(--color-surface)',
@@ -81,14 +87,14 @@ export default function GlucoseChartScreen() {
   const [period,     setPeriod]     = useState<PeriodKey>('1M');
   const [tagFilter,  setTagFilter]  = useState<'ALL' | MealTag>('ALL');
 
-  const loadRecords = useCallback(async () => {
-    const data = await db.getAllRecords();
-    // 오래된 순 정렬 (차트용)
-    data.sort((a, b) => new Date(a.measured_at).getTime() - new Date(b.measured_at).getTime());
-    setAllRecords(data);
+  useEffect(() => {
+    const load = async () => {
+      const data = await db.getAllRecords();
+      data.sort((a, b) => new Date(a.measured_at).getTime() - new Date(b.measured_at).getTime());
+      setAllRecords(data);
+    };
+    load();
   }, [db]);
-
-  useEffect(() => { loadRecords(); }, [loadRecords]);
 
   // ── 필터 적용 ──
   const periodStart = getPeriodStart(period);
@@ -261,8 +267,8 @@ export default function GlucoseChartScreen() {
                 dataKey="level"
                 stroke="var(--color-primary-600)"
                 strokeWidth={2}
-                dot={(props: any) => {
-                  const record: GlucoseRecord = props.payload?.record;
+                dot={(props: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                  const record: GlucoseRecord | undefined = props.payload?.record;
                   return (
                     <circle
                       key={props.key}

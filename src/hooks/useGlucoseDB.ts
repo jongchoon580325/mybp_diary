@@ -6,10 +6,13 @@ import type { IGlucoseRepository } from '../firebase/IGlucoseRepository';
 export function useGlucoseDB(): IGlucoseRepository {
   const { user } = useAuthContext();
 
+  const uid = user?.uid;
+  const isAnonymous = user?.isAnonymous;
+
   return useMemo(() => {
-    if (user && !user.isAnonymous) {
-      return createFirestoreGlucoseRepository(user.uid);
+    if (uid && !isAnonymous) {
+      return createFirestoreGlucoseRepository(uid);
     }
     return createIndexedDBGlucoseRepository();
-  }, [user?.uid, user?.isAnonymous]);
+  }, [uid, isAnonymous]);
 }
