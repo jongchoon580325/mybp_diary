@@ -1,11 +1,16 @@
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, Upload, Trash2, Info, ChevronRight, UserRound, Check } from 'lucide-react';
+import { X, Download, Upload, Trash2, Info, ChevronRight, UserRound, Check, LogOut } from 'lucide-react';
 import { useDB } from '../hooks/useDB';
+import { useGlucoseDB } from '../hooks/useGlucoseDB';
 import { useModal } from '../hooks/useModal';
 import { useSettingsStore } from '../store/settingsStore';
-import { downloadCsv, csvToSessions } from '../services/csvService';
+import { useAuthContext } from '../contexts/AuthContext';
+import { downloadCombinedCsv, parseCombinedCsv } from '../services/combinedCsvService';
 import AgeChipGroup from './AgeChipGroup';
+import type { DiabetesType } from '../types';
+
+const DIABETES_TYPES: DiabetesType[] = ['없음', '1형', '2형', '임신성'];
 
 interface SettingsDrawerProps {
   isOpen: boolean;
@@ -16,8 +21,44 @@ const APP_VERSION = 'v1.1';
 
 export default function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps) {
   const { getAllSessions, saveSession, clearAllSessions } = useDB();
-  const { showDangerConfirm, showToast } = useModal();
-  const { ageGroup, userName, setUserName } = useSettingsStore();
+  const glucoseDb = useGlucoseDB();
+  const { showDangerConfirm, showToast, showSuccess } = useModal();
+  const {
+    ageGroup, userName, setUserName,
+    diabetesType, setDiabetesType,
+    glucoseTarget, setGlucoseTarget,
+    resetSettings,
+  } = useSettingsStore();
+
+  const [targetMin, setTargetMin] = useState(String(glucoseTarget?.target_min ?? 70));
+  const [targetMax, setTargetMax] = useState(String(glucoseTarget?.target_max ?? 140));
+  const [targetSaved, setTargetSaved] = useState(false);
+
+  const handleSaveGlucoseTarget = () => {
+    const min = Number(targetMin);
+    const max = Number(targetMax);
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min >= max || min < 20 || max > 600) {
+      showToast('유효하지 않은 범위입니다. (최솟값 < 최댓값, 20~600)', 'error');
+      return;
+    }
+    setGlucoseTarget({ target_min: min, target_max: max, diabetes_type: diabetesType });
+    setTargetSaved(true);
+    showToast('혈당 목표 범위가 저장되었습니다.', 'success');
+    setTimeout(() => setTargetSaved(false), 2000);
+  };
+  const { user, signOut } = useAuthContext();
+
+  // ── 로그아웃 ──
+  const handleSignOut = () => {
+    showDangerConfirm(
+      '로그아웃',
+      '로그아웃 하시겠습니까?',
+      async () => {
+        await signOut();
+        onClose();
+      }
+    );
+  };
 
   const fileInputRef  = useRef<HTMLInputElement>(null);
   const [importing,   setImporting]   = useState(false);
@@ -34,13 +75,16 @@ export default function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps)
 
   // ── CSV 백업 ──
   const handleBackup = async () => {
-    const sessions = await getAllSessions();
-    if (sessions.length === 0) {
+    const [sessions, glucoseRecords] = await Promise.all([
+      getAllSessions(),
+      glucoseDb.getAllRecords(),
+    ]);
+    if (sessions.length === 0 && glucoseRecords.length === 0) {
       showToast('백업할 데이터가 없습니다.', 'warning');
       return;
     }
-    downloadCsv(sessions);
-    showToast(`${sessions.length}건 CSV 백업 완료`, 'success');
+    downloadCombinedCsv(sessions, glucoseRecords, userName);
+    showToast(`혈압 ${sessions.length}건 + 혈당 ${glucoseRecords.length}건 백업 완료`, 'success');
   };
 
   // ── CSV 복구 ──
@@ -49,17 +93,36 @@ export default function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps)
     if (!file) return;
     setImporting(true);
     try {
-      const existing = await getAllSessions();
-      const text     = await file.text();
-      const imported = csvToSessions(text);
-      let added = 0;
-      for (const s of imported) {
-        if (!existing.some((x) => x.session_id === s.session_id)) {
+      const text = await file.text();
+      const { sessions: importedSessions, glucoseRecords: importedGlucose } = parseCombinedCsv(text);
+
+      const [existingSessions, existingGlucose] = await Promise.all([
+        getAllSessions(),
+        glucoseDb.getAllRecords(),
+      ]);
+
+      let addedBp = 0;
+      for (const s of importedSessions) {
+        if (!existingSessions.some((x) => x.session_id === s.session_id)) {
           await saveSession(s);
-          added++;
+          addedBp++;
         }
       }
-      showToast(`${added}건 복구 완료 (중복 ${imported.length - added}건 제외)`, 'success');
+
+      let addedGlucose = 0;
+      for (const r of importedGlucose) {
+        if (!existingGlucose.some((x) => x.record_id === r.record_id)) {
+          await glucoseDb.saveRecord(r);
+          addedGlucose++;
+        }
+      }
+
+      const totalAdded = addedBp + addedGlucose;
+      const totalDup   = (importedSessions.length - addedBp) + (importedGlucose.length - addedGlucose);
+      showSuccess(
+        'CSV 복구 완료',
+        `혈압 ${addedBp}건 + 혈당 ${addedGlucose}건 복구되었습니다.\n(중복 ${totalDup}건 제외, 총 ${totalAdded}건)`
+      );
     } catch (err: any) {
       showToast(`복구 오류: ${err.message}`, 'error');
     } finally {
@@ -72,10 +135,14 @@ export default function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps)
   const handleReset = () => {
     showDangerConfirm(
       '전체 데이터 초기화',
-      '모든 측정 기록이 영구 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.',
+      '혈압 · 혈당 모든 측정 기록이 영구 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.',
       async () => {
-        await clearAllSessions();
-        showToast('전체 데이터가 초기화되었습니다.', 'success');
+        await Promise.all([
+          clearAllSessions(),
+          glucoseDb.clearAllRecords(),
+        ]);
+        resetSettings();
+        showToast('앱 내 모든 데이터가 초기화되었습니다.', 'success');
       }
     );
   };
@@ -224,6 +291,96 @@ export default function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps)
                 </div>
               </section>
 
+              {/* ── 혈당 설정 ── */}
+              <section>
+                <SectionTitle>혈당 설정</SectionTitle>
+                <div style={{
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '16px',
+                  display: 'flex', flexDirection: 'column', gap: '14px',
+                }}>
+                  {/* 당뇨 유형 */}
+                  <div>
+                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                      당뇨 유형
+                    </p>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {DIABETES_TYPES.map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            setDiabetesType(type);
+                            if (glucoseTarget) setGlucoseTarget({ ...glucoseTarget, diabetes_type: type });
+                          }}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: 'var(--radius-full)',
+                            border: `1.5px solid ${diabetesType === type ? 'var(--color-primary-700)' : 'var(--color-border)'}`,
+                            background: diabetesType === type ? 'var(--color-primary-700)' : 'var(--color-surface)',
+                            color: diabetesType === type ? '#fff' : 'var(--color-text-primary)',
+                            fontSize: '12px', fontWeight: diabetesType === type ? 600 : 400,
+                            cursor: 'pointer',
+                            transition: 'all var(--transition-fast)',
+                          }}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 개인 목표 범위 */}
+                  <div>
+                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                      개인 목표 혈당 범위 (mg/dL)
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="number"
+                        value={targetMin}
+                        onChange={(e) => { setTargetMin(e.target.value); setTargetSaved(false); }}
+                        placeholder="최솟값"
+                        min={20} max={599}
+                        style={{ flex: 1, padding: '8px 10px', border: '1.5px solid var(--color-border)', borderRadius: 'var(--radius-md)', fontSize: '14px', color: 'var(--color-text-primary)', background: 'var(--color-bg)', outline: 'none', textAlign: 'center' }}
+                      />
+                      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>~</span>
+                      <input
+                        type="number"
+                        value={targetMax}
+                        onChange={(e) => { setTargetMax(e.target.value); setTargetSaved(false); }}
+                        placeholder="최댓값"
+                        min={21} max={600}
+                        style={{ flex: 1, padding: '8px 10px', border: '1.5px solid var(--color-border)', borderRadius: 'var(--radius-md)', fontSize: '14px', color: 'var(--color-text-primary)', background: 'var(--color-bg)', outline: 'none', textAlign: 'center' }}
+                      />
+                      <button
+                        onClick={handleSaveGlucoseTarget}
+                        style={{
+                          padding: '8px 12px',
+                          background: targetSaved ? '#16a34a' : 'var(--color-primary-700)',
+                          border: 'none', borderRadius: 'var(--radius-md)',
+                          color: '#fff', fontSize: '12px', fontWeight: 600,
+                          cursor: 'pointer', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', gap: '4px',
+                          transition: 'background 0.2s',
+                        }}
+                      >
+                        {targetSaved ? <Check size={14} /> : '저장'}
+                      </button>
+                    </div>
+                    <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                      설정 시 ADA 기준 대신 개인 목표 범위로 판정됩니다.
+                      {glucoseTarget && (
+                        <span style={{ color: 'var(--color-primary-700)', marginLeft: '4px' }}>
+                          (현재: {glucoseTarget.target_min}~{glucoseTarget.target_max})
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
               {/* ── 데이터 관리 ── */}
               <section>
                 <SectionTitle>데이터 관리</SectionTitle>
@@ -271,6 +428,46 @@ export default function SettingsDrawer({ isOpen, onClose }: SettingsDrawerProps)
                   style={{ display: 'none' }}
                   onChange={handleRestore}
                 />
+              </section>
+
+              {/* ── 계정 ── */}
+              <section>
+                <SectionTitle>계정</SectionTitle>
+                <div style={{
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)',
+                  overflow: 'hidden',
+                }}>
+                  {/* 로그인 정보 */}
+                  <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '32px', height: '32px', borderRadius: '50%',
+                      background: '#f0fdf4', border: '1.5px solid #bbf7d0',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      <UserRound size={16} color="#16a34a" />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                        {user?.isAnonymous ? '게스트' : (user?.displayName || user?.email || '로그인됨')}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '1px' }}>
+                        {user?.isAnonymous ? '기기에만 저장 · Google 연결 시 동기화' : 'Google 계정으로 로그인'}
+                      </div>
+                    </div>
+                  </div>
+                  {/* 로그아웃 버튼 */}
+                  <SettingsRow
+                    icon={<LogOut size={16} color="#dc2626" />}
+                    iconBg="#fef2f2"
+                    label="로그아웃"
+                    description="계정에서 로그아웃합니다"
+                    onClick={handleSignOut}
+                    danger
+                    border
+                  />
+                </div>
               </section>
 
               {/* ── 앱 정보 ── */}

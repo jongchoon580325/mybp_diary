@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'prompt',   // 새 SW 감지 시 needRefresh=true → 배너 표시
       manifest: {
         name: 'BloodPressure Manager',
         short_name: 'BP Manager',
@@ -26,6 +26,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        clientsClaim: true,   // 새 SW가 모든 탭 즉시 제어
       },
     }),
   ],
