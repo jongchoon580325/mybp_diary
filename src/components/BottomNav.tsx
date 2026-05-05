@@ -41,13 +41,13 @@ export default function BottomNav() {
     >
       {/* ── 도메인 전환 토글 ─────────────────────────────────────── */}
       <div style={{
-        height: '32px',
+        height: '42px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '4px',
         borderBottom: '1px solid var(--color-border)',
-        backgroundColor: 'var(--color-surface-alt)',
+        backgroundColor: 'var(--color-neutral-300)',
         padding: '0 16px',
       }}>
         {([
@@ -62,7 +62,7 @@ export default function BottomNav() {
               borderRadius: 'var(--radius-full)',
               border: 'none',
               background: isActive ? 'var(--color-primary-700)' : 'transparent',
-              color: isActive ? '#fff' : 'var(--color-text-muted)',
+              color: isActive ? '#fff' : 'var(--color-text-secondary)',
               fontSize: '12px',
               fontWeight: isActive ? 700 : 400,
               cursor: 'pointer',

@@ -37,7 +37,7 @@ export default function Modal() {
               position: 'fixed', inset: 0,
               background: 'rgba(0,0,0,0.45)',
               backdropFilter: 'blur(4px)',
-              zIndex: 200,
+              zIndex: 9999,
             }}
           />
 
@@ -59,7 +59,7 @@ export default function Modal() {
               background: 'var(--color-surface)',
               borderRadius: 'var(--radius-xl)',
               padding: '24px',
-              zIndex: 201,
+              zIndex: 10000,
               boxShadow: 'var(--shadow-xl)',
             }}
           >
@@ -104,7 +104,7 @@ export default function Modal() {
                   color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
                 }}
               >
-                {isAlert ? '확인' : isDeviation ? '그대로 저장' : isDanger ? '삭제' : '확인'}
+                {isAlert ? '확인' : isDeviation ? '그대로 저장' : isDanger ? '확인' : '확인'}
               </button>
             </div>
           </motion.div>

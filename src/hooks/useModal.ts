@@ -18,6 +18,7 @@ interface ModalActions {
   showConfirm: (title: string, message: string, onConfirm: () => void) => void;
   showDangerConfirm: (title: string, message: string, onConfirm: () => void) => void;
   showDeviationWarning: (onConfirm: () => void, onCancel: () => void) => void;
+  showSuccess: (title: string, message: string) => void;
   closeModal: () => void;
   showToast: (message: string, variant?: 'success' | 'error' | 'warning') => void;
 }
@@ -51,6 +52,9 @@ export const useModal = create<ModalState & ModalActions>((set) => ({
       onConfirm,
       onCancel,
     }),
+
+  showSuccess: (title, message) =>
+    set({ isOpen: true, type: 'alert', title, message }),
 
   closeModal: () =>
     set({ isOpen: false, type: null, title: '', message: '', onConfirm: undefined, onCancel: undefined }),
