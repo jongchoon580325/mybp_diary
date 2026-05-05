@@ -13,10 +13,11 @@ export interface Reading {
   pul: number;
 }
 
-// ─── 시간대 / 팔 / 자세 ──────────────────────────────────────────────────────
+// ─── 시간대 / 팔 / 자세 / 기기 ───────────────────────────────────────────────
 export type TimeSlot = '아침' | '저녁';
 export type Arm = '왼쪽 팔' | '오른쪽 팔';
 export type Posture = '앉은 자세' | '누운 자세';
+export type Device = '혈압기' | 'Watch';
 
 // ─── 측정 세션 (IndexedDB 저장 단위) ─────────────────────────────────────────
 export interface MeasurementSession {
@@ -26,6 +27,7 @@ export interface MeasurementSession {
   time_slot: TimeSlot;
   arm: Arm;
   posture: Posture;
+  device?: Device;           // 측정 기기 (구버전 호환을 위해 optional)
   readings: [Reading, Reading, Reading]; // 3회 개별 측정값
   avg_sys: number;
   avg_dia: number;
@@ -70,5 +72,45 @@ export interface AiJudgeResult {
 // ─── 입력 검증 오류 ───────────────────────────────────────────────────────────
 export interface ValidationError {
   field: 'sys' | 'dia' | 'pul' | 'age_group';
+  message: string;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 혈당 (Blood Sugar) 도메인
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ─── 식사 태그 ────────────────────────────────────────────────────────────────
+export type MealTag = '공복' | '식전' | '식후 1h' | '식후 2h' | '취침 전';
+
+// ─── 당뇨 유형 ────────────────────────────────────────────────────────────────
+export type DiabetesType = '1형' | '2형' | '임신성' | '없음';
+
+// ─── 혈당 판정 상태 ──────────────────────────────────────────────────────────
+export type GlucoseStatus = '정상' | '주의' | '고혈당' | '저혈당';
+
+// ─── 혈당 기록 (Firestore / IndexedDB 저장 단위) ─────────────────────────────
+export interface GlucoseRecord {
+  record_id: string;        // UUID
+  measured_at: string;      // ISO 8601 DateTime
+  glucose_level: number;    // 혈당 수치 (mg/dL)
+  meal_tag: MealTag;        // 측정 시점 태그
+  insulin?: number;         // 인슐린 투여량 (단위), 선택
+  carbs?: number;           // 탄수화물 섭취량 (g), 선택
+  exercise?: string;        // 운동 종류 및 시간, 선택
+  note?: string;            // 메모, 선택
+  status: GlucoseStatus;   // 판정 결과
+  created_at: string;       // ISO 8601
+}
+
+// ─── 혈당 목표 범위 (사용자 설정) ────────────────────────────────────────────
+export interface GlucoseTarget {
+  target_min: number;      // 목표 최솟값 (mg/dL), 기본 70
+  target_max: number;      // 목표 최댓값 (mg/dL), 기본 140
+  diabetes_type: DiabetesType;
+}
+
+// ─── 혈당 검증 오류 ──────────────────────────────────────────────────────────
+export interface GlucoseValidationError {
+  field: 'glucose_level' | 'meal_tag';
   message: string;
 }
