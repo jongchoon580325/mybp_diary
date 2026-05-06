@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SessionDetailModal from '../components/SessionDetailModal';
 import { useDB } from '../hooks/useDB';
@@ -130,12 +130,20 @@ export default function RecordScreen() {
         <div style={{ display: 'flex', gap: '4px' }}>
           <div style={{
             display: 'flex', flexDirection: 'column', gap: '6px',
-            fontSize: '11px', color: 'var(--color-text-secondary)',
-            letterSpacing: '0.3px',
+            fontSize: '11px', letterSpacing: '0.3px',
           }}>
-            <span>정상 : ≤130/90</span>
-            <span>주의 : 131/91~140/100</span>
-            <span>경고 : ≥141/101</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#16a34a' }}>
+              <CheckCircle2 size={14} />
+              정상 : ≤130/90
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#ca8a04' }}>
+              <AlertTriangle size={14} />
+              주의 : 131/91~140/100
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#dc2626' }}>
+              <XCircle size={14} />
+              경고 : ≥141/101
+            </span>
           </div>
         </div>
       </div>
