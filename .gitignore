@@ -26,5 +26,7 @@ dist-ssr
 
 # 환경변수 (API 키 보안)
 .env
-.env.local
+.env.secret
+.env.secret.local
 .env.*.local
+!.env.local
