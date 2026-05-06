@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SessionDetailModal from '../components/SessionDetailModal';
 import { useDB } from '../hooks/useDB';
 import { useModal } from '../hooks/useModal';
+import { useSettingsStore } from '../store/settingsStore';
+import { getStandard } from '../constants/ageBPStandards';
 import type { MeasurementSession, BpStatus } from '../types';
 
 // ── 상태 필터 옵션 ────────────────────────────────────────────────────────────
@@ -43,10 +45,14 @@ function groupByMonth(sessions: MeasurementSession[]): Map<string, MeasurementSe
 export default function RecordScreen() {
   const { getAllSessions, updateSession, deleteSession } = useDB();
   const { showToast } = useModal();
+  const { ageGroup } = useSettingsStore();
 
   const [sessions,       setSessions]       = useState<MeasurementSession[]>([]);
   const [statusFilter,   setStatusFilter]   = useState<StatusFilter>('ALL');
   const [selectedSession, setSelectedSession] = useState<MeasurementSession | null>(null);
+
+  // 현재 연령대 기준값
+  const std = ageGroup ? getStandard(ageGroup) : null;
 
   // ── 데이터 로드 ──
   const loadSessions = useCallback(async () => {
@@ -128,23 +134,33 @@ export default function RecordScreen() {
 
         {/* 아이콘 버튼들 */}
         <div style={{ display: 'flex', gap: '4px' }}>
-          <div style={{
-            display: 'flex', flexDirection: 'column', gap: '1.5px',
-            fontSize: '11px', letterSpacing: '0.3px',
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#16a34a' }}>
-              <CheckCircle2 size={14} />
-              정상 : ≤130/90
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#ca8a04' }}>
-              <AlertTriangle size={14} />
-              주의 : 131/91~140/100
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#dc2626' }}>
-              <XCircle size={14} />
-              경고 : ≥141/101
-            </span>
-          </div>
+          {std ? (
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: '1.5px',
+              fontSize: '11px', letterSpacing: '0.3px',
+            }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#16a34a' }}>
+                <CheckCircle2 size={14} />
+                정상 : ≤{std.sys_normal}/{std.dia_normal}
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#ca8a04' }}>
+                <AlertTriangle size={14} />
+                주의 : {std.sys_normal + 1}/{std.dia_normal + 1}~{std.sys_caution - 1}/{std.dia_caution - 1}
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#dc2626' }}>
+                <XCircle size={14} />
+                경고 : ≥{std.sys_caution}/{std.dia_caution}
+              </span>
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: '1.5px',
+              fontSize: '11px', letterSpacing: '0.3px',
+              color: 'var(--color-text-muted)',
+            }}>
+              <span>연령대를 설정해 주세요.</span>
+            </div>
+          )}
         </div>
       </div>
 

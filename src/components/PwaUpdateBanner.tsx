@@ -52,17 +52,16 @@ export default function PwaUpdateBanner() {
             top: 'var(--header-h, 56px)',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: '100%',
+            width: 'calc(100% - 24px)',
             maxWidth: '480px',
             zIndex: 200,
-            padding: '0 12px',
           }}
         >
           <div
             style={{
               background: 'var(--color-primary-800)',
               borderRadius: '0 0 14px 14px',
-              padding: '10px 14px',
+              padding: '12px 16px',
               display: 'flex',
               alignItems: 'center',
               gap: '10px',

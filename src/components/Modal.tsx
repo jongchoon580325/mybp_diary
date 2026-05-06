@@ -52,13 +52,15 @@ export default function Modal() {
             transition={{ type: 'spring', stiffness: 340, damping: 28 }}
             style={{
               position: 'fixed',
-              top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 'calc(100% - 48px)',
+              top: '50%',
+              left: '12px',
+              right: '12px',
+              transform: 'translateY(-50%)',
               maxWidth: '380px',
+              margin: '0 auto',
               background: 'var(--color-surface)',
               borderRadius: 'var(--radius-xl)',
-              padding: '24px',
+              padding: '20px 16px',
               zIndex: 10000,
               boxShadow: 'var(--shadow-xl)',
             }}
