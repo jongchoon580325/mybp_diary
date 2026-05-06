@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Download, Upload, Trash2, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SessionDetailModal from '../components/SessionDetailModal';
 import { useDB } from '../hooks/useDB';
 import { useModal } from '../hooks/useModal';
-import { downloadCsv, csvToSessions } from '../services/csvService';
 import type { MeasurementSession, BpStatus } from '../types';
 
 // ── 상태 필터 옵션 ────────────────────────────────────────────────────────────
@@ -42,15 +41,12 @@ function groupByMonth(sessions: MeasurementSession[]): Map<string, MeasurementSe
 
 // ── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
 export default function RecordScreen() {
-  const { getAllSessions, updateSession, deleteSession, clearAllSessions, saveSession } = useDB();
-  const { showDangerConfirm, showToast } = useModal();
+  const { getAllSessions, updateSession, deleteSession } = useDB();
+  const { showToast } = useModal();
 
   const [sessions,       setSessions]       = useState<MeasurementSession[]>([]);
   const [statusFilter,   setStatusFilter]   = useState<StatusFilter>('ALL');
   const [selectedSession, setSelectedSession] = useState<MeasurementSession | null>(null);
-  const [importing,      setImporting]      = useState(false);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── 데이터 로드 ──
   const loadSessions = useCallback(async () => {
@@ -88,51 +84,6 @@ export default function RecordScreen() {
     showToast('기록이 삭제되었습니다.', 'success');
   };
 
-  // ── 전체 초기화 ──
-  const handleClearAll = () => {
-    showDangerConfirm(
-      '전체 데이터 초기화',
-      '모든 측정 기록이 영구적으로 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.',
-      async () => {
-        await clearAllSessions();
-        setSessions([]);
-        showToast('전체 기록이 삭제되었습니다.', 'success');
-      }
-    );
-  };
-
-  // ── CSV 내보내기 ──
-  const handleExportCsv = () => {
-    if (sessions.length === 0) {
-      showToast('내보낼 데이터가 없습니다.', 'warning');
-      return;
-    }
-    downloadCsv(sessions);
-    showToast(`${sessions.length}건 CSV 저장 완료`, 'success');
-  };
-
-  // ── CSV 가져오기 ──
-  const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImporting(true);
-    try {
-      const text     = await file.text();
-      const imported = csvToSessions(text);
-      let added = 0;
-      for (const s of imported) {
-        const exists = sessions.some((x) => x.session_id === s.session_id);
-        if (!exists) { await saveSession(s); added++; }
-      }
-      await loadSessions();
-      showToast(`${added}건 가져오기 완료 (중복 제외)`, 'success');
-    } catch (err: any) {
-      showToast(`CSV 오류: ${err.message}`, 'error');
-    } finally {
-      setImporting(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
@@ -177,52 +128,18 @@ export default function RecordScreen() {
 
         {/* 아이콘 버튼들 */}
         <div style={{ display: 'flex', gap: '4px' }}>
-          <button
-            onClick={handleExportCsv}
-            title="CSV 내보내기"
-            style={{
-              background: 'none', border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)', padding: '7px',
-              cursor: 'pointer', display: 'flex', color: 'var(--color-text-muted)',
-            }}
-          >
-            <Download size={15} />
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            title="CSV 가져오기"
-            disabled={importing}
-            style={{
-              background: 'none', border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)', padding: '7px',
-              cursor: importing ? 'not-allowed' : 'pointer',
-              display: 'flex', color: 'var(--color-text-muted)',
-            }}
-          >
-            <Upload size={15} />
-          </button>
-          <button
-            onClick={handleClearAll}
-            title="전체 초기화"
-            style={{
-              background: 'none', border: '1px solid #fca5a5',
-              borderRadius: 'var(--radius-md)', padding: '7px',
-              cursor: 'pointer', display: 'flex', color: '#dc2626',
-            }}
-          >
-            <Trash2 size={15} />
-          </button>
+          <div style={{
+            display: 'flex', flexDirection: 'column', gap: '6px',
+            fontSize: '11px', color: 'var(--color-text-secondary)',
+            letterSpacing: '0.3px',
+          }}>
+            <span>정상 : ≤130/90</span>
+            <span>주의 : 131/91~140/100</span>
+            <span>경고 : ≥141/101</span>
+          </div>
         </div>
       </div>
 
-      {/* 숨겨진 파일 인풋 */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".csv"
-        style={{ display: 'none' }}
-        onChange={handleImportCsv}
-      />
 
       {/* ── 건수 요약 ── */}
       <div style={{
