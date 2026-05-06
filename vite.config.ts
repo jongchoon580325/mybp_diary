@@ -29,6 +29,7 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         maximumFileSizeToCacheInBytes: 5000000,
+        dontCacheBustURLsMatching: /\.(js|css)$/,
       },
     }),
   ],

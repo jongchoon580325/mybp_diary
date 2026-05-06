@@ -17,10 +17,20 @@ export default function PwaUpdateBanner() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r: ServiceWorkerRegistration | undefined) {
+      console.log('[PwaUpdateBanner] SW Registered:', r?.scope);
       if (r) {
-        // 10초마다 SW 업데이트 체크 (개발/테스트 용도)
+        // 초기 체크
+        console.log('[PwaUpdateBanner] Initial update check...');
+        r.update();
+
+        // 10초마다 SW 업데이트 체크
         const intervalId = setInterval(() => {
-          console.log('[PwaUpdateBanner] Checking for updates...');
+          console.log('[PwaUpdateBanner] Checking for updates...', {
+            scope: r.scope,
+            installing: !!r.installing,
+            waiting: !!r.waiting,
+            active: !!r.active,
+          });
           r.update().catch(err => console.error('[PwaUpdateBanner] Update check failed:', err));
         }, 10 * 1000);
         return () => clearInterval(intervalId);
