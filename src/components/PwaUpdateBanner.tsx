@@ -17,15 +17,26 @@ export default function PwaUpdateBanner() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r: ServiceWorkerRegistration | undefined) {
-      // 1시간마다 SW 업데이트 체크
       if (r) {
-        setInterval(() => r.update(), 60 * 60 * 1000);
+        // 10초마다 SW 업데이트 체크 (개발/테스트 용도)
+        const intervalId = setInterval(() => {
+          console.log('[PwaUpdateBanner] Checking for updates...');
+          r.update().catch(err => console.error('[PwaUpdateBanner] Update check failed:', err));
+        }, 10 * 1000);
+        return () => clearInterval(intervalId);
       }
+    },
+    onOfflineReady() {
+      console.log('[PwaUpdateBanner] App is ready to work offline');
     },
   });
 
   useEffect(() => {
-    if (needRefresh) setShowBanner(true);
+    console.log('[PwaUpdateBanner] needRefresh changed:', needRefresh);
+    if (needRefresh) {
+      console.log('[PwaUpdateBanner] Update available! Showing banner...');
+      setShowBanner(true);
+    }
   }, [needRefresh]);
 
   const handleUpdate = () => {
