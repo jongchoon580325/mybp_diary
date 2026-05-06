@@ -129,7 +129,7 @@ export default function RecordScreen() {
         {/* 아이콘 버튼들 */}
         <div style={{ display: 'flex', gap: '4px' }}>
           <div style={{
-            display: 'flex', flexDirection: 'column', gap: '3px',
+            display: 'flex', flexDirection: 'column', gap: '1.5px',
             fontSize: '11px', letterSpacing: '0.3px',
           }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#16a34a' }}>
